@@ -108,7 +108,7 @@
         document.getElementById("streamBox").classList.remove("hidden");
 
         document.getElementById("status").innerText = "Logged in สำเร็จ ✅";
-        document.getElementById("cam").src = "https://deliver-fresh-browsing-registry.trycloudflare.com/stream";
+        document.getElementById("cam").src = "https://mary-chip-tub-msg.trycloudflare.com/stream";
       }
 
       async function login() {
@@ -133,7 +133,7 @@
 
       async function logout() {
         await fetch(API + "/api/logout", { credentials: "include" });
-        document.getElementById("cam").src = "https://deliver-fresh-browsing-registry.trycloudflare.com/stream";
+        document.getElementById("cam").src = "https://mary-chip-tub-msg.trycloudflare.com/stream";
         showLogin();
       }
 
@@ -141,6 +141,7 @@
     </script>
   </body>
 </html>
+
 
 
 
