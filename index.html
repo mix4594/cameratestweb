@@ -3,37 +3,138 @@
   <head>
     <meta charset="UTF-8" />
     <title>ESP32 Live Stream</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        padding: 20px;
+      }
+      .box {
+        max-width: 400px;
+        border: 1px solid #ccc;
+        padding: 20px;
+        border-radius: 10px;
+      }
+      input {
+        width: 100%;
+        padding: 10px;
+        margin-top: 8px;
+        margin-bottom: 12px;
+        border-radius: 8px;
+        border: 1px solid #aaa;
+      }
+      button {
+        padding: 10px;
+        width: 100%;
+        border-radius: 8px;
+        border: none;
+        cursor: pointer;
+        font-size: 16px;
+      }
+      #cam {
+        margin-top: 15px;
+        width: 100%;
+        max-width: 900px;
+        border: 2px solid black;
+        border-radius: 10px;
+      }
+      .hidden {
+        display: none;
+      }
+      #logoutBtn {
+        background: red;
+        color: white;
+        margin-top: 10px;
+        max-width: 200px;
+      }
+      #loginBtn {
+        background: green;
+        color: white;
+      }
+    </style>
   </head>
+
   <body>
     <h2>ESP32 Live Stream</h2>
 
-    <button onclick="logout()">Logout</button>
-    <p id="status"></p>
+    <!-- LOGIN SECTION -->
+    <div id="loginBox" class="box">
+      <h3>Login</h3>
+      <input id="username" placeholder="Username" />
+      <input id="password" type="password" placeholder="Password" />
+      <button id="loginBtn" onclick="login()">Login</button>
+      <p id="loginMsg"></p>
+    </div>
 
-    <img id="cam" width="720" />
+    <!-- STREAM SECTION -->
+    <div id="streamBox" class="hidden">
+      <h3>Live Camera</h3>
+      <p id="status"></p>
+
+      <img id="cam" />
+
+      <br />
+      <button id="logoutBtn" onclick="logout()">Logout</button>
+    </div>
 
     <script>
       const API = "https://camera-livetest.testweb4594.workers.dev";
 
       async function checkLogin() {
-        const res = await fetch(API + "/api/me", {
+        try {
+          const res = await fetch(API + "/api/me", {
+            credentials: "include",
+          });
+
+          const data = await res.json();
+
+          if (data.loggedIn) {
+            showStream();
+          } else {
+            showLogin();
+          }
+        } catch (err) {
+          document.getElementById("loginMsg").innerText =
+            "Backend ไม่ตอบสนอง / ตรวจสอบ URL Worker";
+        }
+      }
+
+      function showLogin() {
+        document.getElementById("loginBox").classList.remove("hidden");
+        document.getElementById("streamBox").classList.add("hidden");
+      }
+
+      function showStream() {
+        document.getElementById("loginBox").classList.add("hidden");
+        document.getElementById("streamBox").classList.remove("hidden");
+
+        document.getElementById("status").innerText = "Logged in สำเร็จ ✅";
+        document.getElementById("cam").src = API + "/stream";
+      }
+
+      async function login() {
+        const username = document.getElementById("username").value;
+        const password = document.getElementById("password").value;
+
+        const res = await fetch(API + "/api/login", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
           credentials: "include",
+          body: JSON.stringify({ username, password }),
         });
 
-        const data = await res.json();
-
-        if (!data.loggedIn) {
-          location.href = "login.html";
-          return;
+        if (res.ok) {
+          document.getElementById("loginMsg").innerText = "Login success ✅";
+          showStream();
+        } else {
+          document.getElementById("loginMsg").innerText =
+            "Login failed ❌ (username/password ผิด)";
         }
-
-        document.getElementById("status").innerText = "Logged in!";
-        document.getElementById("cam").src = API + "/stream";
       }
 
       async function logout() {
         await fetch(API + "/api/logout", { credentials: "include" });
-        location.href = "login.html";
+        document.getElementById("cam").src = "";
+        showLogin();
       }
 
       checkLogin();
