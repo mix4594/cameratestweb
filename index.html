@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="th">
+  <head>
+    <meta charset="UTF-8" />
+    <title>ESP32 Live Stream</title>
+  </head>
+  <body>
+    <h2>ESP32 Live Stream</h2>
+
+    <button onclick="logout()">Logout</button>
+    <p id="status"></p>
+
+    <img id="cam" width="720" />
+
+    <script>
+      const API = "https://camera-livetest.testweb4594.workers.dev";
+
+      async function checkLogin() {
+        const res = await fetch(API + "/api/me", {
+          credentials: "include",
+        });
+
+        const data = await res.json();
+
+        if (!data.loggedIn) {
+          location.href = "login.html";
+          return;
+        }
+
+        document.getElementById("status").innerText = "Logged in!";
+        document.getElementById("cam").src = API + "/stream";
+      }
+
+      async function logout() {
+        await fetch(API + "/api/logout", { credentials: "include" });
+        location.href = "login.html";
+      }
+
+      checkLogin();
+    </script>
+  </body>
+</html>
